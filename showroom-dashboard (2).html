@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Showroom Pulse — Admin Dashboard</title>
+<style>
+/* ============================================================
+   style.css — Showroom Pulse Admin Dashboard
+   Token system: graphite base + brass/gold + teal accents
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  --bg-base: #0A0E14;
+  --bg-elevated: #0F141C;
+  --surface: rgba(255,255,255,0.045);
+  --surface-strong: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.14);
+
+  --gold: #C9A227;
+  --gold-soft: rgba(201,162,39,0.16);
+  --teal: #2EC4B6;
+  --teal-soft: rgba(46,196,182,0.16);
+  --red: #E5484D;
+  --amber: #E8973A;
+  --blue: #5B8DEF;
+
+  --text-primary: #F5F3EE;
+  --text-secondary: #C9CDD6;
+  --text-muted: #8A8F98;
+
+  --font-display: 'Sora', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 9px;
+  --shadow-soft: 0 10px 40px rgba(0,0,0,0.35);
+  --transition: 200ms cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="light"] {
+  --bg-base: #F0EFEA;
+  --bg-elevated: #FFFFFF;
+  --surface: rgba(255,255,255,0.7);
+  --surface-strong: rgba(255,255,255,0.9);
+  --border: rgba(10,14,20,0.08);
+  --border-strong: rgba(10,14,20,0.14);
+  --text-primary: #14181F;
+  --text-secondary: #454B55;
+  --text-muted: #767C88;
+  --shadow-soft: 0 10px 30px rgba(20,24,31,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(201,162,39,0.07), transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(46,196,182,0.06), transparent 45%);
+  background-attachment: fixed;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* ============================= LAYOUT ============================= */
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 84px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 0;
+  gap: 28px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-elevated);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 20;
+}
+
+.sidebar-logo {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), #8a6d15);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 800; color: #14181F;
+  font-size: 18px;
+  box-shadow: 0 6px 18px rgba(201,162,39,0.35);
+}
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+.nav-item {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  transition: all var(--transition);
+  position: relative;
+}
+.nav-item:hover { background: var(--surface); color: var(--text-primary); }
+.nav-item.active { background: var(--gold-soft); color: var(--gold); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 22px; background: var(--gold); border-radius: 3px;
+}
+
+.sidebar-foot { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.theme-switch { position: relative; width: 46px; height: 26px; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.switch-track {
+  position: absolute; inset: 0; background: var(--surface-strong); border: 1px solid var(--border);
+  border-radius: 20px; cursor: pointer; transition: var(--transition);
+}
+.switch-track::before {
+  content: '🌙'; position: absolute; width: 20px; height: 20px; left: 3px; top: 2px;
+  border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: var(--transition);
+}
+.theme-switch input:checked + .switch-track::before { transform: translateX(20px); content: '☀️'; }
+
+.main-area { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ============================= HEADER ============================= */
+.top-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 15;
+  background: rgba(10,14,20,0.6);
+  backdrop-filter: blur(20px);
+}
+[data-theme="light"] .top-header { background: rgba(240,239,234,0.75); }
+
+.header-left h1 { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.header-left .breadcrumb { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.header-right { display: flex; align-items: center; gap: 22px; }
+
+.clock-block { text-align: right; }
+.clock-time { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--gold); }
+.clock-date { font-size: 11px; color: var(--text-muted); }
+
+.sync-block { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.sync-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-green { background: var(--teal); box-shadow: 0 0 0 4px var(--teal-soft); animation: pulse 2s infinite; }
+.dot-red { background: var(--red); box-shadow: 0 0 0 4px rgba(229,72,77,0.16); }
+.sync-sub { font-size: 10px; color: var(--text-muted); }
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 var(--teal-soft); }
+  70% { box-shadow: 0 0 0 6px rgba(46,196,182,0); }
+  100% { box-shadow: 0 0 0 0 rgba(46,196,182,0); }
+}
+
+.notif-bell-wrap { position: relative; }
+.notif-bell {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-primary); font-size: 16px;
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.notif-badge {
+  position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700; border-radius: 10px; padding: 1px 5px; min-width: 16px; text-align: center;
+}
+.notif-panel {
+  position: absolute; top: 52px; right: 0; width: 320px; max-height: 400px; overflow-y: auto;
+  border-radius: var(--radius-md); padding: 14px; display: none; flex-direction: column; gap: 4px;
+  box-shadow: var(--shadow-soft); z-index: 30;
+}
+.notif-panel.open { display: flex; }
+.notif-panel h4 { font-size: 13px; font-family: var(--font-display); margin-bottom: 6px; color: var(--text-muted); }
+.notif-item { display: flex; gap: 10px; padding: 10px; border-radius: var(--radius-sm); transition: var(--transition); }
+.notif-item:hover { background: var(--surface); }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-top: 6px; flex-shrink: 0; }
+.notif-title { font-size: 13px; font-weight: 600; }
+.notif-sub { font-size: 11px; color: var(--text-secondary); }
+.notif-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* ============================= CONTENT ============================= */
+.content { padding: 28px 32px 60px; flex: 1; }
+.view { display: none; animation: fadeIn .35s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  margin: 32px 0 14px; display: flex; align-items: center; gap: 8px; color: var(--text-primary);
+}
+.section-title .accent-bar { width: 4px; height: 16px; background: var(--gold); border-radius: 4px; }
+
+/* ============================= STAT CARDS ============================= */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;
+}
+.stat-card {
+  border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-soft); border-color: var(--border-strong); }
+.stat-card::after {
+  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity var(--transition);
+  background: linear-gradient(135deg, var(--card-glow, var(--gold-soft)), transparent 60%);
+}
+.stat-card:hover::after { opacity: 1; }
+.stat-icon {
+  width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; background: var(--card-glow, var(--gold-soft)); margin-bottom: 14px;
+}
+.stat-value {
+  font-family: var(--font-mono); font-size: 26px; font-weight: 700; letter-spacing: -0.5px;
+}
+.stat-value.roll { animation: rollIn .5s cubic-bezier(.2,.8,.3,1); }
+@keyframes rollIn {
+  0% { transform: translateY(40%); opacity: 0; filter: blur(2px); }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+.stat-label { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+/* ============================= CHARTS ============================= */
+.charts-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px;
+}
+.chart-card {
+  border-radius: var(--radius-lg); padding: 20px; height: 340px; display: flex; flex-direction: column;
+}
+.chart-card h3 { font-family: var(--font-display); font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.chart-card canvas { flex: 1; width: 100% !important; height: auto !important; }
+
+/* ============================= TABLE ============================= */
+.table-toolbar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.search-box {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: var(--radius-md);
+  flex: 1; min-width: 220px; max-width: 340px;
+}
+.search-box input { background: transparent; border: none; outline: none; color: var(--text-primary); width: 100%; font-size: 13px; }
+.search-box input::placeholder { color: var(--text-muted); }
+
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+select, .btn-select {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-primary);
+  padding: 9px 12px; border-radius: var(--radius-sm); font-size: 12.5px; outline: none;
+}
+
+.quick-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.quick-filter {
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-secondary); font-size: 12px; font-weight: 600; transition: var(--transition);
+}
+.quick-filter:hover { border-color: var(--gold); color: var(--gold); }
+.quick-filter.active { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); }
+
+.btn-icon-action {
+  padding: 9px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-primary); font-size: 12.5px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px; transition: var(--transition);
+}
+.btn-icon-action:hover { border-color: var(--teal); color: var(--teal); }
+
+.table-wrap { border-radius: var(--radius-lg); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left; padding: 14px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+  white-space: nowrap;
+}
+thead th:hover { color: var(--gold); }
+tbody td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+tbody tr { transition: background var(--transition); cursor: pointer; }
+tbody tr:hover { background: var(--surface); }
+.cell-name { color: var(--text-primary); font-weight: 600; }
+.cell-email { color: var(--text-muted); }
+.cell-actions { display: flex; gap: 6px; }
+.icon-btn {
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent;
+  font-size: 13px; display: flex; align-items: center; justify-content: center; transition: var(--transition);
+}
+.icon-btn:hover { background: var(--gold-soft); border-color: var(--gold); }
+.empty-state { text-align: center; padding: 40px !important; color: var(--text-muted); }
+
+.status-pill { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.status-new { background: rgba(91,141,239,0.15); color: var(--blue); }
+.status-contacted { background: rgba(232,151,58,0.15); color: var(--amber); }
+.status-follow-up { background: rgba(201,162,39,0.15); color: var(--gold); }
+.status-negotiation { background: rgba(155,107,217,0.15); color: #9B6BD9; }
+.status-reserved { background: rgba(46,196,182,0.15); color: var(--teal); }
+.status-purchased { background: rgba(111,207,151,0.15); color: #6FCF97; }
+.status-lost { background: rgba(229,72,77,0.15); color: var(--red); }
+
+.table-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; }
+.page-info { font-size: 12px; color: var(--text-muted); }
+.page-btn {
+  padding: 7px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-primary); font-size: 12px; font-weight: 600;
+}
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ============================= MODAL ============================= */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(6,8,12,0.7); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+}
+.modal-overlay.open { display: flex; animation: fadeIn .25s ease; }
+.modal-box {
+  width: 100%; max-width: 460px; border-radius: var(--radius-lg); padding: 28px;
+  box-shadow: var(--shadow-soft); position: relative;
+}
+.modal-close { position: absolute; top: 18px; right: 18px; background: transparent; border: none; color: var(--text-muted); font-size: 20px; }
+.modal-avatar {
+  width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 20px; color: #14181F;
+  background: linear-gradient(135deg, var(--gold), var(--teal)); margin-bottom: 14px;
+}
+.modal-box h2 { font-family: var(--font-display); font-size: 19px; margin-bottom: 18px; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.modal-field label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 4px; }
+.modal-field span, .modal-field div { font-size: 13.5px; font-weight: 600; }
+.modal-field.full { grid-column: 1 / -1; }
+.modal-select, .modal-textarea {
+  width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-primary); padding: 9px 10px; font-size: 13px; font-family: inherit; outline: none;
+}
+.modal-textarea { resize: vertical; min-height: 60px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.modal-btn {
+  flex: 1; min-width: 120px; padding: 11px; border-radius: var(--radius-sm); border: none;
+  font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: var(--transition);
+}
+.modal-btn.call { background: var(--teal); color: #072620; }
+.modal-btn.whatsapp { background: #25D366; color: #062b14; }
+.modal-btn.copy { background: var(--surface-strong); color: var(--text-primary); border: 1px solid var(--border); }
+.modal-btn:hover { transform: translateY(-2px); }
+
+/* ============================= INSIGHTS / CATEGORIES ============================= */
+.insights-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
+@media (max-width: 900px) { .insights-grid { grid-template-columns: 1fr; } }
+.insight-card { border-radius: var(--radius-lg); padding: 22px; }
+.insight-card h3 { font-family: var(--font-display); font-size: 14px; margin-bottom: 14px; }
+.insight-card ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.insight-card li { font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; padding-left: 2px; }
+.insight-card li strong { color: var(--text-primary); }
+
+.rank-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.rank-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface); }
+.rank { width: 22px; height: 22px; border-radius: 6px; background: var(--gold-soft); color: var(--gold); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rank-name { flex: 1; color: var(--text-primary); font-weight: 500; }
+.rank-count { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+
+.cat-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; }
+.cat-label { width: 150px; font-size: 12.5px; color: var(--text-secondary); flex-shrink: 0; }
+.cat-bar-track { flex: 1; height: 8px; border-radius: 6px; background: var(--surface-strong); overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+.cat-count { width: 34px; text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+
+.two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 900px) { .two-col-grid { grid-template-columns: 1fr; } }
+
+/* ============================= SETTINGS ============================= */
+.settings-card { border-radius: var(--radius-lg); padding: 28px; max-width: 560px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+.form-group input, .form-group select {
+  width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 11px 13px; color: var(--text-primary); font-size: 13.5px; outline: none; font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+.form-hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), #a9860f); color: #14181F; border: none;
+  padding: 12px 22px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(201,162,39,0.3); }
+
+/* ============================= TOASTS ============================= */
+.toast-wrap { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+.toast {
+  padding: 12px 18px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border);
+  color: var(--text-primary); font-size: 13px; box-shadow: var(--shadow-soft); opacity: 0; transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-success { border-left: 3px solid var(--teal); }
+.toast-info { border-left: 3px solid var(--gold); }
+
+/* ============================= RESPONSIVE ============================= */
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .sidebar-logo { width: 34px; height: 34px; font-size: 14px; }
+  .nav-item { width: 42px; height: 42px; font-size: 17px; }
+  .content { padding: 20px 16px 50px; }
+  .top-header { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+  .clock-block { display: none; }
+  .modal-grid { grid-template-columns: 1fr; }
+  .chart-card { height: 300px; }
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">SP</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="overview" data-label="Overview" title="Overview">📊</button>
+      <button class="nav-item" data-view="customers" data-label="Customers" title="Customers">👥</button>
+      <button class="nav-item" data-view="insights" data-label="Insights" title="Insights">💡</button>
+      <button class="nav-item" data-view="settings" data-label="Settings" title="Settings">⚙️</button>
+    </nav>
+    <div class="sidebar-foot">
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="switch-track"></span>
+      </label>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN AREA ============ -->
+  <div class="main-area">
+
+    <!-- ===== TOP HEADER ===== -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 id="viewTitle">Overview</h1>
+        <div class="breadcrumb">Car Showroom · Lead Intelligence</div>
+      </div>
+
+      <div class="header-right">
+        <div class="clock-block">
+          <div class="clock-time" id="liveTime">--:--:--</div>
+          <div class="clock-date" id="liveDate">Loading date…</div>
+        </div>
+
+        <div class="sync-block">
+          <div class="sync-status">
+            <span class="status-dot dot-green" id="statusDot"></span>
+            <span id="statusLabel">Connecting…</span>
+          </div>
+          <div class="sync-sub">Last sync: <span id="lastSync">—</span></div>
+        </div>
+
+        <div class="notif-bell-wrap">
+          <button class="notif-bell" id="notifBell">🔔<span class="notif-badge" id="notifCount">0</span></button>
+          <div class="notif-panel glass" id="notifPanel">
+            <h4>Live Notifications</h4>
+            <div id="notifList"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="content">
+
+      <!-- ============ VIEW: OVERVIEW ============ -->
+      <section class="view active" id="view-overview">
+
+        <div class="section-title"><span class="accent-bar"></span>Key Metrics</div>
+        <div class="stats-grid">
+          <div class="stat-card glass" style="--card-glow: rgba(201,162,39,0.25)">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Leads</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(46,196,182,0.25)">
+            <div class="stat-icon">☀️</div>
+            <div class="stat-value" id="statToday">0</div>
+            <div class="stat-label">Today's Leads</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(91,141,239,0.25)">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value" id="statWeek">0</div>
+            <div class="stat-label">This Week</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(155,107,217,0.25)">
+            <div class="stat-icon">🗓️</div>
+            <div class="stat-value" id="statMonth">0</div>
+            <div class="stat-label">This Month</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(232,151,58,0.25)">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="statAvgBudget">—</div>
+            <div class="stat-label">Average Budget</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(111,207,151,0.25)">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value" id="statMaxBudget">—</div>
+            <div class="stat-label">Highest Budget</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(229,72,77,0.2)">
+            <div class="stat-icon">📉</div>
+            <div class="stat-value" id="statMinBudget">—</div>
+            <div class="stat-label">Lowest Budget</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(201,162,39,0.25)">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value" id="statConversion">0%</div>
+            <div class="stat-label">Conversion Rate</div>
+          </div>
+          <div class="stat-card glass" style="--card-glow: rgba(46,196,182,0.25)">
+            <div class="stat-icon">🔁</div>
+            <div class="stat-value" id="statReturning">0</div>
+            <div class="stat-label">Returning Customers</div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="accent-bar"></span>Analytics</div>
+        <div class="charts-grid">
+          <div class="chart-card glass"><h3>Most Requested Cars (Top 10)</h3><canvas id="chartTopCars"></canvas></div>
+          <div class="chart-card glass"><h3>Average Customer Budget / Day</h3><canvas id="chartBudgetTrend"></canvas></div>
+          <div class="chart-card glass"><h3>Budget Distribution</h3><canvas id="chartBudgetDist"></canvas></div>
+          <div class="chart-card glass"><h3>Daily Leads</h3><canvas id="chartDailyLeads"></canvas></div>
+          <div class="chart-card glass"><h3>Monthly Leads</h3><canvas id="chartMonthlyLeads"></canvas></div>
+          <div class="chart-card glass"><h3>Top Interested Brands</h3><canvas id="chartTopBrands"></canvas></div>
+          <div class="chart-card glass"><h3>Peak Submission Hours</h3><canvas id="chartPeakHours"></canvas></div>
+          <div class="chart-card glass"><h3>Vehicle Type Demand</h3><canvas id="chartVehicleTypes"></canvas></div>
+        </div>
+
+        <div class="section-title"><span class="accent-bar"></span>Lead Categories</div>
+        <div class="insight-card glass" id="categoryGrid"></div>
+
+      </section>
+
+      <!-- ============ VIEW: CUSTOMERS ============ -->
+      <section class="view" id="view-customers">
+
+        <div class="quick-filters">
+          <button class="quick-filter active" data-filter="all">All Time</button>
+          <button class="quick-filter" data-filter="today">Today</button>
+          <button class="quick-filter" data-filter="yesterday">Yesterday</button>
+          <button class="quick-filter" data-filter="7days">Last 7 Days</button>
+          <button class="quick-filter" data-filter="lastmonth">Last Month</button>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="search-box glass">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="Search name, phone, email, or car…">
+          </div>
+          <div class="filter-row">
+            <select id="statusFilterSelect">
+              <option value="all">All Statuses</option>
+              <option>New</option><option>Contacted</option><option>Follow Up</option>
+              <option>Negotiation</option><option>Reserved</option><option>Purchased</option><option>Lost</option>
+            </select>
+            <button class="btn-icon-action" id="exportCsvBtn">⬇ CSV</button>
+            <button class="btn-icon-action" id="exportExcelBtn">⬇ Excel</button>
+          </div>
+        </div>
+
+        <div class="table-wrap glass">
+          <table id="customerTable">
+            <thead>
+              <tr>
+                <th data-sort="name">Customer</th>
+                <th data-sort="phone">Phone</th>
+                <th data-sort="email">Email</th>
+                <th data-sort="car">Interested Car</th>
+                <th data-sort="budget">Budget</th>
+                <th data-sort="createdAt">Date</th>
+                <th data-sort="status">Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          <div class="table-footer">
+            <span class="page-info" id="pageInfo">Page 1</span>
+            <div style="display:flex; gap:8px;">
+              <button class="page-btn" id="prevPageBtn">← Prev</button>
+              <button class="page-btn" id="nextPageBtn">Next →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ VIEW: INSIGHTS ============ -->
+      <section class="view" id="view-insights">
+
+        <div class="section-title"><span class="accent-bar"></span>Smart Insights</div>
+        <div class="insights-grid">
+          <div class="insight-card glass">
+            <h3>🔥 Automated Observations</h3>
+            <ul id="insightsList"></ul>
+          </div>
+          <div class="insight-card glass">
+            <h3>📌 Business Insights</h3>
+            <ul id="businessInsightsList"></ul>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="accent-bar"></span>Top Rankings</div>
+        <div class="two-col-grid">
+          <div class="insight-card glass">
+            <h3>Top 10 Most Searched Cars</h3>
+            <ul class="rank-list" id="top10Cars"></ul>
+          </div>
+          <div class="insight-card glass">
+            <h3>Top 10 Brands by Interest</h3>
+            <ul class="rank-list" id="top10Brands"></ul>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="accent-bar"></span>Average Budget Breakdown</div>
+        <div class="two-col-grid">
+          <div class="insight-card glass">
+            <h3>Average Budget per Car Model</h3>
+            <ul class="rank-list" id="avgBudgetModel"></ul>
+          </div>
+          <div class="insight-card glass">
+            <h3>Average Budget per Brand</h3>
+            <ul class="rank-list" id="avgBudgetBrand"></ul>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============ VIEW: SETTINGS ============ -->
+      <section class="view" id="view-settings">
+        <div class="section-title"><span class="accent-bar"></span>Dashboard Settings</div>
+        <form class="settings-card glass" id="settingsForm">
+
+          <div class="form-group">
+            <label>n8n Webhook URL</label>
+            <input type="url" id="webhookUrlInput" placeholder="https://your-n8n-instance.com/webhook/leads">
+            <div class="form-hint">Leave empty to keep exploring the dashboard with demo data.</div>
+          </div>
+
+          <div class="form-group">
+            <label>Google Sheet ID</label>
+            <input type="text" id="sheetIdInput" placeholder="1AbCDefGhIjkLmNoPQRsTuVwXyZ">
+          </div>
+
+          <div class="form-group">
+            <label>Refresh Interval (seconds)</label>
+            <input type="number" id="refreshIntervalInput" min="5" max="300" value="30">
+          </div>
+
+          <div class="form-group">
+            <label>Currency</label>
+            <select id="currencySelect">
+              <option value="EGP">EGP — Egyptian Pound</option>
+              <option value="USD">USD — US Dollar</option>
+              <option value="SAR">SAR — Saudi Riyal</option>
+              <option value="AED">AED — UAE Dirham</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Language</label>
+            <select id="languageSelect">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-primary">Save Settings</button>
+        </form>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ CUSTOMER DETAILS MODAL ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box glass">
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <div class="modal-avatar" id="modalAvatar">AA</div>
+    <h2 id="modalName">Customer Name</h2>
+
+    <div class="modal-grid">
+      <div class="modal-field"><label>Phone</label><span id="modalPhone">—</span></div>
+      <div class="modal-field"><label>Email</label><span id="modalEmail">—</span></div>
+      <div class="modal-field"><label>Interested Car</label><span id="modalCar">—</span></div>
+      <div class="modal-field"><label>Brand</label><span id="modalBrand">—</span></div>
+      <div class="modal-field"><label>Budget</label><span id="modalBudget">—</span></div>
+      <div class="modal-field"><label>Date</label><span id="modalDate">—</span></div>
+      <div class="modal-field"><label>Payment Method</label><span id="modalPayment">—</span></div>
+
+      <div class="modal-field full">
+        <label>Status</label>
+        <select class="modal-select" id="statusSelect"></select>
+      </div>
+      <div class="modal-field full">
+        <label>Assign to Sales Employee</label>
+        <select class="modal-select" id="assignSelect"></select>
+      </div>
+      <div class="modal-field full">
+        <label>Internal Notes</label>
+        <textarea class="modal-textarea" id="notesArea" placeholder="Add notes about this lead…"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn call" id="callBtn">📞 Call</button>
+      <button class="modal-btn whatsapp" id="whatsappBtn">💬 WhatsApp</button>
+      <button class="modal-btn copy" id="copyInfoBtn">📋 Copy Info</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ============================================================
+   utils.js — formatting, categorization & insight generation
+   ============================================================ */
+
+const CAR_BRAND_MAP = {
+  'Toyota Corolla': 'Toyota', 'Toyota Yaris': 'Toyota', 'Toyota Fortuner': 'Toyota', 'Toyota Hilux': 'Toyota',
+  'Toyota RAV4': 'Toyota', 'Toyota Camry': 'Toyota',
+  'Hyundai Elantra': 'Hyundai', 'Hyundai Tucson': 'Hyundai', 'Hyundai Accent': 'Hyundai', 'Hyundai Creta': 'Hyundai',
+  'Kia Sportage': 'Kia', 'Kia Cerato': 'Kia', 'Kia Sonet': 'Kia', 'Kia Rio': 'Kia',
+  'Nissan Sunny': 'Nissan', 'Nissan Qashqai': 'Nissan', 'Nissan X-Trail': 'Nissan',
+  'BMW 3 Series': 'BMW', 'BMW X5': 'BMW', 'BMW X3': 'BMW',
+  'Mercedes C-Class': 'Mercedes', 'Mercedes GLC': 'Mercedes', 'Mercedes E-Class': 'Mercedes',
+  'Audi A4': 'Audi', 'Audi Q5': 'Audi',
+  'MG ZS': 'MG', 'MG 5': 'MG',
+  'Chery Tiggo 7': 'Chery', 'Chery Tiggo 8': 'Chery',
+  'Chevrolet Optra': 'Chevrolet', 'Chevrolet Captiva': 'Chevrolet',
+};
+
+const CAR_TYPE_MAP = {
+  'Toyota Corolla': 'Sedan', 'Toyota Yaris': 'Hatchback', 'Toyota Fortuner': 'SUV', 'Toyota Hilux': 'Pickup',
+  'Toyota RAV4': 'SUV', 'Toyota Camry': 'Sedan',
+  'Hyundai Elantra': 'Sedan', 'Hyundai Tucson': 'SUV', 'Hyundai Accent': 'Sedan', 'Hyundai Creta': 'SUV',
+  'Kia Sportage': 'SUV', 'Kia Cerato': 'Sedan', 'Kia Sonet': 'SUV', 'Kia Rio': 'Hatchback',
+  'Nissan Sunny': 'Sedan', 'Nissan Qashqai': 'SUV', 'Nissan X-Trail': 'SUV',
+  'BMW 3 Series': 'Sedan', 'BMW X5': 'SUV', 'BMW X3': 'SUV',
+  'Mercedes C-Class': 'Sedan', 'Mercedes GLC': 'SUV', 'Mercedes E-Class': 'Sedan',
+  'Audi A4': 'Sedan', 'Audi Q5': 'SUV',
+  'MG ZS': 'SUV', 'MG 5': 'Sedan',
+  'Chery Tiggo 7': 'SUV', 'Chery Tiggo 8': 'SUV',
+  'Chevrolet Optra': 'Sedan', 'Chevrolet Captiva': 'SUV',
+};
+
+const Utils = {
+
+  getBrand(car) {
+    return CAR_BRAND_MAP[car] || car?.split(' ')[0] || 'Unknown';
+  },
+
+  // Prefers the explicit `brand` field from the sheet (reliable); falls back
+  // to guessing from the car name only for the built-in demo dataset.
+  brandOf(customer) {
+    return customer.brand || this.getBrand(customer.car);
+  },
+
+  getVehicleType(car) {
+    return CAR_TYPE_MAP[car] || 'Sedan';
+  },
+
+  getBudgetCategory(budget) {
+    if (budget < 300000) return 'Economy';
+    if (budget < 500000) return 'Mid Range';
+    if (budget < 700000) return 'Premium';
+    return 'Luxury';
+  },
+
+  budgetCategoryColor(cat) {
+    return { 'Economy': '#2EC4B6', 'Mid Range': '#C9A227', 'Premium': '#E8973A', 'Luxury': '#E5484D' }[cat] || '#8A8F98';
+  },
+
+  formatCurrency(value, currency = 'EGP') {
+    if (value === null || value === undefined || isNaN(value)) return '—';
+    const n = Number(value);
+    if (n >= 1000000) return `${(n / 1000000).toFixed(2)}M ${currency}`;
+    if (n >= 1000) return `${(n / 1000).toFixed(0)}K ${currency}`;
+    return `${n.toLocaleString()} ${currency}`;
+  },
+
+  formatNumber(value) {
+    if (value === null || value === undefined || isNaN(value)) return '0';
+    return Number(value).toLocaleString();
+  },
+
+  formatDate(iso, opts = {}) {
+    const d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', ...opts });
+  },
+
+  formatDateTime(iso) {
+    const d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  },
+
+  formatTime(d = new Date()) {
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  },
+
+  timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  },
+
+  isToday(iso) {
+    const d = new Date(iso), t = new Date();
+    return d.toDateString() === t.toDateString();
+  },
+
+  isYesterday(iso) {
+    const d = new Date(iso), y = new Date();
+    y.setDate(y.getDate() - 1);
+    return d.toDateString() === y.toDateString();
+  },
+
+  isThisWeek(iso) {
+    const d = new Date(iso), now = new Date();
+    const start = new Date(now); start.setDate(now.getDate() - now.getDay()); start.setHours(0, 0, 0, 0);
+    return d >= start;
+  },
+
+  isThisMonth(iso) {
+    const d = new Date(iso), now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  },
+
+  isLastMonth(iso) {
+    const d = new Date(iso), now = new Date();
+    const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return d.getMonth() === lm.getMonth() && d.getFullYear() === lm.getFullYear();
+  },
+
+  isLast7Days(iso) {
+    const diff = (Date.now() - new Date(iso).getTime()) / 86400000;
+    return diff >= 0 && diff <= 7;
+  },
+
+  debounce(fn, delay = 300) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+  },
+
+  /* Parses budget values coming from a Google Sheet where the field is a
+     human-typed range like "1.5M - 2M", "500K - 750K", "More than 2M",
+     or a plain number. Returns a numeric estimate used for all calculations. */
+  parseBudget(raw) {
+    if (raw === null || raw === undefined) return 0;
+    if (typeof raw === 'number') return raw;
+    const str = String(raw).trim();
+    if (!str) return 0;
+
+    const toNum = (num, unit) => {
+      let v = parseFloat(num);
+      if (isNaN(v)) return 0;
+      if (unit && /m/i.test(unit)) v *= 1000000;
+      else if (unit && /k/i.test(unit)) v *= 1000;
+      return v;
+    };
+
+    const moreMatch = str.match(/more than\s*([\d.]+)\s*(K|M)?/i);
+    if (moreMatch) return Math.round(toNum(moreMatch[1], moreMatch[2]) * 1.15);
+
+    const lessMatch = str.match(/less than\s*([\d.]+)\s*(K|M)?/i);
+    if (lessMatch) return Math.round(toNum(lessMatch[1], lessMatch[2]) * 0.85);
+
+    const rangeMatch = str.match(/([\d.]+)\s*(K|M)?\s*-\s*([\d.]+)\s*(K|M)?/i);
+    if (rangeMatch) {
+      const unit1 = rangeMatch[2] || rangeMatch[4];
+      const unit2 = rangeMatch[4] || rangeMatch[2];
+      const lo = toNum(rangeMatch[1], unit1);
+      const hi = toNum(rangeMatch[3], unit2);
+      return Math.round((lo + hi) / 2);
+    }
+
+    const singleMatch = str.match(/^([\d.]+)\s*(K|M)?$/i);
+    if (singleMatch) return Math.round(toNum(singleMatch[1], singleMatch[2]));
+
+    const digits = str.replace(/[^\d.]/g, '');
+    return digits ? Math.round(parseFloat(digits)) : 0;
+  },
+
+  storageGet(key, fallback = null) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch { return fallback; }
+  },
+
+  storageSet(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.warn('storage failed', e); }
+  },
+
+  uid() {
+    return 'c_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  },
+
+  csvExport(rows, filename = 'leads.csv') {
+    const headers = ['Name', 'Phone', 'Email', 'Car', 'Brand', 'Budget', 'Payment Method', 'Date', 'Status'];
+    const lines = [headers.join(',')];
+    rows.forEach(r => {
+      const budget = r.budgetLabel || r.budget;
+      lines.push([r.name, r.phone, r.email, r.car, r.brand || Utils.getBrand(r.car), budget, r.paymentMethod || '', r.createdAt, r.status]
+        .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+    });
+    Utils._download(lines.join('\n'), filename, 'text/csv');
+  },
+
+  excelExport(rows, filename = 'leads.xls') {
+    // Simple Excel-compatible HTML table export (opens natively in Excel)
+    let html = '<table><tr>' + ['Name', 'Phone', 'Email', 'Car', 'Brand', 'Budget', 'Payment Method', 'Date', 'Status']
+      .map(h => `<th>${h}</th>`).join('') + '</tr>';
+    rows.forEach(r => {
+      const budget = r.budgetLabel || r.budget;
+      html += '<tr>' + [r.name, r.phone, r.email, r.car, r.brand || Utils.getBrand(r.car), budget, r.paymentMethod || '', r.createdAt, r.status]
+        .map(v => `<td>${v ?? ''}</td>`).join('') + '</tr>';
+    });
+    html += '</table>';
+    Utils._download(html, filename, 'application/vnd.ms-excel');
+  },
+
+  _download(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+
+  toast(msg, type = 'info') {
+    const wrap = document.getElementById('toastWrap');
+    if (!wrap) return;
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    wrap.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3500);
+  },
+
+  /* ---------- Business Insight Generation ---------- */
+  generateInsights(customers) {
+    if (!customers.length) return ['No data yet — insights will appear once leads start coming in.'];
+    const insights = [];
+
+    // most requested car
+    const carCounts = {};
+    customers.forEach(c => carCounts[c.car] = (carCounts[c.car] || 0) + 1);
+    const topCar = Object.entries(carCounts).sort((a, b) => b[1] - a[1])[0];
+    if (topCar) insights.push(`🔥 ${topCar[0]} is the most requested car (${topCar[1]} leads).`);
+
+    // most requested brand
+    const brandCounts = {};
+    customers.forEach(c => brandCounts[Utils.brandOf(c)] = (brandCounts[Utils.brandOf(c)] || 0) + 1);
+    const topBrand = Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0];
+    if (topBrand) insights.push(`🚗 ${topBrand[0]} is the most in-demand brand overall.`);
+
+    // budget category share
+    const catCounts = {};
+    customers.forEach(c => catCounts[Utils.getBudgetCategory(c.budget)] = (catCounts[Utils.getBudgetCategory(c.budget)] || 0) + 1);
+    const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+    if (topCat) insights.push(`💰 ${Math.round(topCat[1] / customers.length * 100)}% of customers fall in the "${topCat[0]}" budget range.`);
+
+    // weekly growth
+    const thisWeek = customers.filter(c => Utils.isThisWeek(c.createdAt)).length;
+    const now = new Date();
+    const lastWeekStart = new Date(now); lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
+    const lastWeekEnd = new Date(now); lastWeekEnd.setDate(now.getDate() - now.getDay());
+    const lastWeek = customers.filter(c => { const d = new Date(c.createdAt); return d >= lastWeekStart && d < lastWeekEnd; }).length;
+    if (lastWeek > 0) {
+      const growth = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+      insights.push(`📈 Lead generation ${growth >= 0 ? 'increased' : 'decreased'} ${Math.abs(growth)}% this week vs last week.`);
+    } else if (thisWeek > 0) {
+      insights.push(`📈 ${thisWeek} new leads recorded this week.`);
+    }
+
+    // highest avg budget brand
+    const brandBudgets = {};
+    customers.forEach(c => {
+      const b = Utils.brandOf(c);
+      brandBudgets[b] = brandBudgets[b] || [];
+      brandBudgets[b].push(c.budget);
+    });
+    let bestBrand = null, bestAvg = 0;
+    Object.entries(brandBudgets).forEach(([b, arr]) => {
+      const avg = arr.reduce((a, v) => a + v, 0) / arr.length;
+      if (avg > bestAvg) { bestAvg = avg; bestBrand = b; }
+    });
+    if (bestBrand) insights.push(`💎 ${bestBrand} customers usually have the highest average budget (${Utils.formatCurrency(bestAvg)}).`);
+
+    // fastest growing brand (compare this month vs last month counts)
+    const brandThisMonth = {}, brandLastMonth = {};
+    customers.forEach(c => {
+      const b = Utils.brandOf(c);
+      if (Utils.isThisMonth(c.createdAt)) brandThisMonth[b] = (brandThisMonth[b] || 0) + 1;
+      if (Utils.isLastMonth(c.createdAt)) brandLastMonth[b] = (brandLastMonth[b] || 0) + 1;
+    });
+    let fastestBrand = null, fastestGrowth = -Infinity;
+    Object.keys(brandThisMonth).forEach(b => {
+      const prev = brandLastMonth[b] || 0;
+      const cur = brandThisMonth[b];
+      const growth = prev === 0 ? cur : (cur - prev) / prev;
+      if (growth > fastestGrowth && cur >= 2) { fastestGrowth = growth; fastestBrand = b; }
+    });
+    if (fastestBrand) insights.push(`🚀 ${fastestBrand} demand is growing fastest month-over-month.`);
+
+    return insights;
+  },
+
+  peakHours(customers) {
+    const hours = new Array(24).fill(0);
+    customers.forEach(c => {
+      const h = new Date(c.createdAt).getHours();
+      if (!isNaN(h)) hours[h]++;
+    });
+    return hours;
+  },
+};
+
+
+/* ============================================================
+   api.js — Google Sheets / n8n data layer
+   ============================================================
+   Expected inbound JSON per lead:
+   { Name, Phone, Email, InterestedCar, Budget, CreatedAt, Status, Notes }
+   ============================================================ */
+
+const Api = {
+  _pollTimer: null,
+  _lastSync: null,
+  _connected: false,
+  _listeners: [],
+
+  onUpdate(fn) { this._listeners.push(fn); },
+
+  _emit(data) { this._listeners.forEach(fn => fn(data)); },
+
+  getSettings() {
+    return Utils.storageGet('dash_settings', {
+      webhookUrl: '',
+      sheetId: '',
+      refreshInterval: 30,
+      currency: 'EGP',
+      language: 'en',
+    });
+  },
+
+  saveSettings(settings) {
+    Utils.storageSet('dash_settings', settings);
+    this.restartPolling();
+  },
+
+  normalize(raw) {
+    // Matches the showroom's own Google Sheet columns:
+    // name, phone, email, brand, model, budget, paymentMethod, notes, submittedAt
+    const brand = raw.brand || raw.Brand || null;
+    const model = raw.model || raw.Model || null;
+    const car = raw.InterestedCar || raw.car ||
+      (brand && model ? `${brand} ${model}` : (brand || model || 'Unknown'));
+    const rawBudget = raw.budget ?? raw.Budget;
+
+    return {
+      id: raw.id || Utils.uid(),
+      name: raw.name || raw.Name || 'Unknown',
+      phone: String(raw.phone || raw.Phone || '').trim(),
+      email: raw.email || raw.Email || '',
+      car,
+      brand: brand || Utils.getBrand(car),
+      model: model || null,
+      budget: Utils.parseBudget(rawBudget),
+      budgetLabel: typeof rawBudget === 'string' ? rawBudget : null,
+      paymentMethod: raw.paymentMethod || raw.PaymentMethod || '',
+      createdAt: (() => {
+        const rawDate = raw.submittedAt || raw.SubmittedAt || raw.CreatedAt || raw.createdAt;
+        const d = rawDate ? new Date(rawDate) : null;
+        return d && !isNaN(d.getTime()) ? d.toISOString() : new Date().toISOString();
+      })(),
+      status: raw.status || raw.Status || 'New',
+      notes: raw.notes || raw.Notes || '',
+      assignedTo: raw.assignedTo || raw.AssignedTo || null,
+    };
+  },
+
+  async fetchLeads() {
+    const settings = this.getSettings();
+
+    if (settings.webhookUrl) {
+      try {
+        const res = await fetch(settings.webhookUrl, { method: 'GET' });
+        if (!res.ok) throw new Error('Bad response');
+        const json = await res.json();
+        const list = Array.isArray(json) ? json : (json.data || []);
+        this._connected = true;
+        this._lastSync = new Date();
+        const normalized = list.map(r => this.normalize(r));
+        this._emit(normalized);
+        return normalized;
+      } catch (err) {
+        console.warn('Webhook fetch failed, falling back to demo data:', err.message);
+        this._connected = false;
+      }
+    }
+
+    // No webhook configured, or fetch failed — use local demo dataset so the
+    // dashboard is fully explorable out of the box.
+    const demo = MockData.get();
+    this._lastSync = new Date();
+    this._emit(demo);
+    return demo;
+  },
+
+  isConnected() { return this._connected || !this.getSettings().webhookUrl ? this._connected : false; },
+  lastSync() { return this._lastSync; },
+
+  startPolling() {
+    this.fetchLeads();
+    const interval = (this.getSettings().refreshInterval || 30) * 1000;
+    this._pollTimer = setInterval(() => this.fetchLeads(), interval);
+  },
+
+  restartPolling() {
+    if (this._pollTimer) clearInterval(this._pollTimer);
+    this.startPolling();
+  },
+};
+
+/* ------------------------------------------------------------
+   MockData — local demo dataset generator (used until a real
+   n8n webhook URL is configured in Settings). Regenerates a
+   fresh "new lead" occasionally to simulate live activity.
+   ------------------------------------------------------------ */
+const MockData = (() => {
+  const cars = Object.keys({
+    'Toyota Corolla': 1, 'Toyota Yaris': 1, 'Toyota Fortuner': 1, 'Toyota Hilux': 1, 'Toyota RAV4': 1,
+    'Hyundai Elantra': 1, 'Hyundai Tucson': 1, 'Hyundai Accent': 1, 'Hyundai Creta': 1,
+    'Kia Sportage': 1, 'Kia Cerato': 1, 'Kia Sonet': 1, 'Kia Rio': 1,
+    'Nissan Sunny': 1, 'Nissan Qashqai': 1, 'Nissan X-Trail': 1,
+    'BMW 3 Series': 1, 'BMW X5': 1, 'Mercedes C-Class': 1, 'Mercedes GLC': 1,
+    'Audi A4': 1, 'MG ZS': 1, 'Chery Tiggo 7': 1, 'Chevrolet Optra': 1,
+  });
+  const firstNames = ['Ahmed', 'Mohamed', 'Youssef', 'Omar', 'Ali', 'Khaled', 'Mostafa', 'Karim', 'Sara', 'Mona', 'Nour', 'Hana', 'Laila', 'Aya', 'Salma', 'Mariam'];
+  const lastNames = ['Mohamed', 'Ahmed', 'Hassan', 'Mahmoud', 'Ibrahim', 'Fathy', 'Saeed', 'Nabil', 'Adel', 'Kamal'];
+  const statuses = ['New', 'Contacted', 'Follow Up', 'Negotiation', 'Reserved', 'Purchased', 'Lost'];
+
+  let dataset = null;
+
+  function randDate(daysBack) {
+    const d = new Date();
+    d.setDate(d.getDate() - Math.floor(Math.random() * daysBack));
+    d.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), 0, 0);
+    return d.toISOString();
+  }
+
+  function randBudget() {
+    const bands = [[120000, 300000], [300000, 500000], [500000, 700000], [700000, 1500000]];
+    const band = bands[Math.floor(Math.random() * bands.length)];
+    return Math.round((band[0] + Math.random() * (band[1] - band[0])) / 1000) * 1000;
+  }
+
+  function makeLead(daysBack = 45) {
+    const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const car = cars[Math.floor(Math.random() * cars.length)];
+    return {
+      id: Utils.uid(),
+      name: `${fn} ${ln}`,
+      phone: `01${Math.floor(Math.random() * 3) + 0}${Math.floor(10000000 + Math.random() * 89999999)}`,
+      email: `${fn.toLowerCase()}.${ln.toLowerCase()}@example.com`,
+      car,
+      budget: randBudget(),
+      createdAt: randDate(daysBack),
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      notes: '',
+      assignedTo: null,
+    };
+  }
+
+  function build() {
+    const arr = [];
+    for (let i = 0; i < 140; i++) arr.push(makeLead(45));
+    // guarantee a few "today" leads
+    for (let i = 0; i < 5; i++) { const l = makeLead(0); l.createdAt = new Date().toISOString(); arr.push(l); }
+    return arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  return {
+    get() {
+      if (!dataset) dataset = build();
+      // Occasionally inject a brand-new live lead to simulate n8n pushing data
+      if (Math.random() < 0.35) {
+        const lead = makeLead(0);
+        lead.createdAt = new Date().toISOString();
+        dataset.unshift(lead);
+        Utils.toast(`New lead: ${lead.name} — ${lead.car}`, 'success');
+      }
+      return dataset;
+    },
+    updateLead(id, patch) {
+      if (!dataset) return;
+      const idx = dataset.findIndex(d => d.id === id);
+      if (idx > -1) dataset[idx] = { ...dataset[idx], ...patch };
+    },
+  };
+})();
+
+
+/* ============================================================
+   charts.js — Chart.js instances & update logic
+   ============================================================ */
+
+const Charts = {
+  instances: {},
+
+  palette: {
+    gold: '#C9A227', teal: '#2EC4B6', red: '#E5484D', amber: '#E8973A',
+    blue: '#5B8DEF', purple: '#9B6BD9', grid: 'rgba(255,255,255,0.06)',
+    text: 'rgba(245,243,238,0.7)',
+  },
+
+  gradient(ctx, color) {
+    const g = ctx.createLinearGradient(0, 0, 0, 260);
+    g.addColorStop(0, color + 'aa');
+    g.addColorStop(1, color + '05');
+    return g;
+  },
+
+  baseOptions(extra = {}) {
+    return Chart.helpers.mergeIf({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: this.palette.text, font: { family: 'Inter', size: 11 }, boxWidth: 10, padding: 14 } },
+        tooltip: {
+          backgroundColor: '#12151ce6', borderColor: 'rgba(201,162,39,0.3)', borderWidth: 1,
+          titleColor: '#F5F3EE', bodyColor: '#C9CDD6', padding: 10, cornerRadius: 8,
+        },
+      },
+      scales: {
+        x: { grid: { color: this.palette.grid, drawBorder: false }, ticks: { color: this.palette.text, font: { size: 10 } } },
+        y: { grid: { color: this.palette.grid, drawBorder: false }, ticks: { color: this.palette.text, font: { size: 10 } } },
+      },
+    }, extra);
+  },
+
+  destroy(key) {
+    if (this.instances[key]) { this.instances[key].destroy(); delete this.instances[key]; }
+  },
+
+  renderAll(customers) {
+    this.renderTopCars(customers);
+    this.renderBudgetTrend(customers);
+    this.renderBudgetDistribution(customers);
+    this.renderDailyLeads(customers);
+    this.renderMonthlyLeads(customers);
+    this.renderTopBrands(customers);
+    this.renderPeakHours(customers);
+    this.renderVehicleTypes(customers);
+  },
+
+  renderTopCars(customers) {
+    const counts = {};
+    customers.forEach(c => counts[c.car] = (counts[c.car] || 0) + 1);
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const canvas = document.getElementById('chartTopCars');
+    if (!canvas) return;
+    this.destroy('topCars');
+    const ctx = canvas.getContext('2d');
+    this.instances.topCars = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: top.map(t => t[0]),
+        datasets: [{ label: 'Requests', data: top.map(t => t[1]), backgroundColor: this.gradient(ctx, this.palette.gold), borderRadius: 8, maxBarThickness: 28 }],
+      },
+      options: this.baseOptions({ indexAxis: 'y', plugins: { legend: { display: false } } }),
+    });
+  },
+
+  renderBudgetTrend(customers) {
+    const byDay = {};
+    customers.forEach(c => {
+      const day = new Date(c.createdAt).toISOString().slice(0, 10);
+      byDay[day] = byDay[day] || [];
+      byDay[day].push(c.budget);
+    });
+    const days = Object.keys(byDay).sort().slice(-14);
+    const avgs = days.map(d => Math.round(byDay[d].reduce((a, v) => a + v, 0) / byDay[d].length));
+    const canvas = document.getElementById('chartBudgetTrend');
+    if (!canvas) return;
+    this.destroy('budgetTrend');
+    const ctx = canvas.getContext('2d');
+    this.instances.budgetTrend = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: days.map(d => Utils.formatDate(d)),
+        datasets: [{
+          label: 'Avg Budget', data: avgs, borderColor: this.palette.teal, backgroundColor: this.gradient(ctx, this.palette.teal),
+          fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: this.palette.teal,
+        }],
+      },
+      options: this.baseOptions({ plugins: { legend: { display: false } } }),
+    });
+  },
+
+  renderBudgetDistribution(customers) {
+    const buckets = { '0-300K': 0, '300K-500K': 0, '500K-700K': 0, '700K+': 0 };
+    customers.forEach(c => {
+      if (c.budget < 300000) buckets['0-300K']++;
+      else if (c.budget < 500000) buckets['300K-500K']++;
+      else if (c.budget < 700000) buckets['500K-700K']++;
+      else buckets['700K+']++;
+    });
+    const canvas = document.getElementById('chartBudgetDist');
+    if (!canvas) return;
+    this.destroy('budgetDist');
+    this.instances.budgetDist = new Chart(canvas.getContext('2d'), {
+      type: 'pie',
+      data: {
+        labels: Object.keys(buckets),
+        datasets: [{ data: Object.values(buckets), backgroundColor: [this.palette.teal, this.palette.gold, this.palette.amber, this.palette.red], borderColor: '#0A0E14', borderWidth: 2 }],
+      },
+      options: this.baseOptions({ scales: {} }),
+    });
+  },
+
+  renderDailyLeads(customers) {
+    const byDay = {};
+    customers.forEach(c => { const d = new Date(c.createdAt).toISOString().slice(0, 10); byDay[d] = (byDay[d] || 0) + 1; });
+    const days = Object.keys(byDay).sort().slice(-14);
+    const canvas = document.getElementById('chartDailyLeads');
+    if (!canvas) return;
+    this.destroy('dailyLeads');
+    const ctx = canvas.getContext('2d');
+    this.instances.dailyLeads = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: days.map(d => Utils.formatDate(d)),
+        datasets: [{ label: 'Leads', data: days.map(d => byDay[d]), borderColor: this.palette.gold, backgroundColor: this.gradient(ctx, this.palette.gold), fill: true, tension: 0.35, pointRadius: 2 }],
+      },
+      options: this.baseOptions({ plugins: { legend: { display: false } } }),
+    });
+  },
+
+  renderMonthlyLeads(customers) {
+    const byMonth = {};
+    customers.forEach(c => { const d = new Date(c.createdAt); const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; byMonth[key] = (byMonth[key] || 0) + 1; });
+    const months = Object.keys(byMonth).sort().slice(-6);
+    const canvas = document.getElementById('chartMonthlyLeads');
+    if (!canvas) return;
+    this.destroy('monthlyLeads');
+    const ctx = canvas.getContext('2d');
+    this.instances.monthlyLeads = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: months.map(m => new Date(m + '-01').toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })),
+        datasets: [{ label: 'Leads', data: months.map(m => byMonth[m]), backgroundColor: this.gradient(ctx, this.palette.blue), borderRadius: 8, maxBarThickness: 40 }],
+      },
+      options: this.baseOptions({ plugins: { legend: { display: false } } }),
+    });
+  },
+
+  renderTopBrands(customers) {
+    const counts = {};
+    customers.forEach(c => { const b = Utils.brandOf(c); counts[b] = (counts[b] || 0) + 1; });
+    const canvas = document.getElementById('chartTopBrands');
+    if (!canvas) return;
+    this.destroy('topBrands');
+    const colors = [this.palette.gold, this.palette.teal, this.palette.blue, this.palette.purple, this.palette.amber, this.palette.red, '#6FCF97', '#F2994A', '#BB6BD9', '#56CCF2'];
+    this.instances.topBrands = new Chart(canvas.getContext('2d'), {
+      type: 'pie',
+      data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: colors, borderColor: '#0A0E14', borderWidth: 2 }] },
+      options: this.baseOptions({ scales: {} }),
+    });
+  },
+
+  renderPeakHours(customers) {
+    const hours = Utils.peakHours(customers);
+    const canvas = document.getElementById('chartPeakHours');
+    if (!canvas) return;
+    this.destroy('peakHours');
+    const ctx = canvas.getContext('2d');
+    this.instances.peakHours = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: hours.map((_, h) => `${h}:00`),
+        datasets: [{ label: 'Submissions', data: hours, backgroundColor: this.gradient(ctx, this.palette.amber), borderRadius: 6, maxBarThickness: 18 }],
+      },
+      options: this.baseOptions({ plugins: { legend: { display: false } } }),
+    });
+  },
+
+  renderVehicleTypes(customers) {
+    const counts = {};
+    customers.forEach(c => { const t = Utils.getVehicleType(c.car); counts[t] = (counts[t] || 0) + 1; });
+    const canvas = document.getElementById('chartVehicleTypes');
+    if (!canvas) return;
+    this.destroy('vehicleTypes');
+    const colors = [this.palette.gold, this.palette.teal, this.palette.blue, this.palette.purple, this.palette.amber, this.palette.red, '#6FCF97'];
+    this.instances.vehicleTypes = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: colors, borderColor: '#0A0E14', borderWidth: 2 }] },
+      options: this.baseOptions({ scales: {}, cutout: '62%' }),
+    });
+  },
+};
+
+
+/* ============================================================
+   dashboard.js — application state, rendering & interactions
+   ============================================================ */
+
+const App = {
+  customers: [],
+  filtered: [],
+  currentPage: 1,
+  pageSize: 8,
+  sortKey: 'createdAt',
+  sortDir: 'desc',
+  searchTerm: '',
+  statusFilter: 'all',
+  dateFilter: 'all',
+  activeView: 'overview',
+  employees: ['Unassigned', 'Mostafa Adel', 'Nour Kamal', 'Youssef Fathy', 'Sara Nabil'],
+  prevStats: {},
+
+  init() {
+    this.bindNav();
+    this.bindHeader();
+    this.bindTableControls();
+    this.bindModal();
+    this.bindSettings();
+    this.bindDarkMode();
+    this.startClock();
+
+    Api.onUpdate((customers) => this.onData(customers));
+    Api.startPolling();
+
+    this.loadSettingsIntoForm();
+  },
+
+  onData(customers) {
+    this.customers = customers;
+    this.applyFilters();
+    this.renderAll();
+    this.updateSyncStatus();
+  },
+
+  renderAll() {
+    this.renderStats();
+    this.renderTable();
+    this.renderInsights();
+    this.renderCategories();
+    this.renderNotifications();
+    Charts.renderAll(this.customers);
+  },
+
+  /* ---------------- Navigation ---------------- */
+  bindNav() {
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = btn.dataset.view;
+        this.activeView = view;
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + view).classList.add('active');
+        document.getElementById('viewTitle').textContent = btn.dataset.label;
+      });
+    });
+  },
+
+  /* ---------------- Header / clock / sync ---------------- */
+  bindHeader() {
+    document.getElementById('notifBell').addEventListener('click', () => {
+      document.getElementById('notifPanel').classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('notifPanel');
+      const bell = document.getElementById('notifBell');
+      if (panel.classList.contains('open') && !panel.contains(e.target) && !bell.contains(e.target)) {
+        panel.classList.remove('open');
+      }
+    });
+  },
+
+  startClock() {
+    const tick = () => {
+      const now = new Date();
+      document.getElementById('liveTime').textContent = Utils.formatTime(now);
+      document.getElementById('liveDate').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    };
+    tick();
+    setInterval(tick, 1000);
+  },
+
+  updateSyncStatus() {
+    const dot = document.getElementById('statusDot');
+    const label = document.getElementById('statusLabel');
+    const syncTime = document.getElementById('lastSync');
+    const connected = Api.isConnected() || !Api.getSettings().webhookUrl;
+    dot.classList.toggle('dot-green', connected);
+    dot.classList.toggle('dot-red', !connected);
+    label.textContent = connected ? (Api.getSettings().webhookUrl ? 'Connected' : 'Demo Mode') : 'Disconnected';
+    syncTime.textContent = Api.lastSync() ? Utils.formatTime(Api.lastSync()) : '—';
+  },
+
+  /* ---------------- Stat Cards ---------------- */
+  computeStats() {
+    const c = this.customers;
+    const budgets = c.map(x => x.budget).filter(b => !isNaN(b));
+    return {
+      total: c.length,
+      today: c.filter(x => Utils.isToday(x.createdAt)).length,
+      week: c.filter(x => Utils.isThisWeek(x.createdAt)).length,
+      month: c.filter(x => Utils.isThisMonth(x.createdAt)).length,
+      avgBudget: budgets.length ? Math.round(budgets.reduce((a, v) => a + v, 0) / budgets.length) : 0,
+      maxBudget: budgets.length ? Math.max(...budgets) : 0,
+      minBudget: budgets.length ? Math.min(...budgets) : 0,
+      conversion: c.length ? Math.round((c.filter(x => x.status === 'Purchased').length / c.length) * 100) : 0,
+      returning: c.filter(x => x.status === 'Purchased' || x.status === 'Reserved').length,
+    };
+  },
+
+  renderStats() {
+    const s = this.computeStats();
+    const currency = Api.getSettings().currency || 'EGP';
+    const cards = [
+      { key: 'total', el: 'statTotal', val: s.total, fmt: Utils.formatNumber },
+      { key: 'today', el: 'statToday', val: s.today, fmt: Utils.formatNumber },
+      { key: 'week', el: 'statWeek', val: s.week, fmt: Utils.formatNumber },
+      { key: 'month', el: 'statMonth', val: s.month, fmt: Utils.formatNumber },
+      { key: 'avgBudget', el: 'statAvgBudget', val: s.avgBudget, fmt: (v) => Utils.formatCurrency(v, currency) },
+      { key: 'maxBudget', el: 'statMaxBudget', val: s.maxBudget, fmt: (v) => Utils.formatCurrency(v, currency) },
+      { key: 'minBudget', el: 'statMinBudget', val: s.minBudget, fmt: (v) => Utils.formatCurrency(v, currency) },
+      { key: 'conversion', el: 'statConversion', val: s.conversion, fmt: (v) => v + '%' },
+      { key: 'returning', el: 'statReturning', val: s.returning, fmt: Utils.formatNumber },
+    ];
+    cards.forEach(card => {
+      const node = document.getElementById(card.el);
+      if (!node) return;
+      const formatted = card.fmt(card.val);
+      if (this.prevStats[card.key] !== formatted) {
+        node.textContent = formatted;
+        node.classList.remove('roll');
+        void node.offsetWidth;
+        node.classList.add('roll');
+        this.prevStats[card.key] = formatted;
+      }
+    });
+  },
+
+  /* ---------------- Table ---------------- */
+  bindTableControls() {
+    document.getElementById('searchInput').addEventListener('input', Utils.debounce((e) => {
+      this.searchTerm = e.target.value.toLowerCase();
+      this.currentPage = 1;
+      this.applyFilters(); this.renderTable();
+    }, 250));
+
+    document.getElementById('statusFilterSelect').addEventListener('change', (e) => {
+      this.statusFilter = e.target.value; this.currentPage = 1;
+      this.applyFilters(); this.renderTable();
+    });
+
+    document.querySelectorAll('.quick-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.quick-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.dateFilter = btn.dataset.filter; this.currentPage = 1;
+        this.applyFilters(); this.renderTable();
+      });
+    });
+
+    document.querySelectorAll('#customerTable th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (this.sortKey === key) this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+        else { this.sortKey = key; this.sortDir = 'asc'; }
+        this.applyFilters(); this.renderTable();
+      });
+    });
+
+    document.getElementById('exportCsvBtn').addEventListener('click', () => Utils.csvExport(this.filtered, 'leads.csv'));
+    document.getElementById('exportExcelBtn').addEventListener('click', () => Utils.excelExport(this.filtered, 'leads.xls'));
+
+    document.getElementById('prevPageBtn').addEventListener('click', () => { if (this.currentPage > 1) { this.currentPage--; this.renderTable(); } });
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+      const maxPage = Math.ceil(this.filtered.length / this.pageSize) || 1;
+      if (this.currentPage < maxPage) { this.currentPage++; this.renderTable(); }
+    });
+  },
+
+  applyFilters() {
+    let list = [...this.customers];
+
+    if (this.searchTerm) {
+      list = list.filter(c =>
+        c.name.toLowerCase().includes(this.searchTerm) ||
+        c.phone.includes(this.searchTerm) ||
+        c.email.toLowerCase().includes(this.searchTerm) ||
+        c.car.toLowerCase().includes(this.searchTerm));
+    }
+    if (this.statusFilter !== 'all') list = list.filter(c => c.status === this.statusFilter);
+
+    switch (this.dateFilter) {
+      case 'today': list = list.filter(c => Utils.isToday(c.createdAt)); break;
+      case 'yesterday': list = list.filter(c => Utils.isYesterday(c.createdAt)); break;
+      case '7days': list = list.filter(c => Utils.isLast7Days(c.createdAt)); break;
+      case 'lastmonth': list = list.filter(c => Utils.isLastMonth(c.createdAt)); break;
+      default: break;
+    }
+
+    list.sort((a, b) => {
+      let va = a[this.sortKey], vb = b[this.sortKey];
+      if (this.sortKey === 'createdAt') { va = new Date(va).getTime(); vb = new Date(vb).getTime(); }
+      if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+      if (va < vb) return this.sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return this.sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    this.filtered = list;
+  },
+
+  renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const start = (this.currentPage - 1) * this.pageSize;
+    const pageItems = this.filtered.slice(start, start + this.pageSize);
+    const currency = Api.getSettings().currency || 'EGP';
+
+    if (!pageItems.length) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No leads match these filters yet — try widening your search.</td></tr>`;
+    } else {
+      tbody.innerHTML = pageItems.map(c => `
+        <tr data-id="${c.id}">
+          <td><span class="cell-name">${c.name}</span></td>
+          <td>${c.phone}</td>
+          <td class="cell-email">${c.email}</td>
+          <td>${c.car}</td>
+          <td>${c.budgetLabel || Utils.formatCurrency(c.budget, currency)}</td>
+          <td>${Utils.formatDate(c.createdAt)}</td>
+          <td><span class="status-pill status-${this.slug(c.status)}">${c.status}</span></td>
+          <td class="cell-actions">
+            <button class="icon-btn" data-action="view" title="View Details">👁</button>
+            <button class="icon-btn" data-action="call" title="Call">📞</button>
+            <button class="icon-btn" data-action="copyPhone" title="Copy Phone">📋</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    document.querySelectorAll('#tableBody tr[data-id]').forEach(row => {
+      const id = row.dataset.id;
+      row.querySelector('[data-action="view"]').addEventListener('click', () => this.openCustomerModal(id));
+      row.querySelector('[data-action="call"]').addEventListener('click', (e) => { e.stopPropagation(); this.callCustomer(id); });
+      row.querySelector('[data-action="copyPhone"]').addEventListener('click', (e) => { e.stopPropagation(); this.copyPhone(id); });
+      row.addEventListener('click', (e) => { if (!e.target.closest('.icon-btn')) this.openCustomerModal(id); });
+    });
+
+    const totalPages = Math.ceil(this.filtered.length / this.pageSize) || 1;
+    document.getElementById('pageInfo').textContent = `Page ${this.currentPage} of ${totalPages} · ${this.filtered.length} leads`;
+    document.getElementById('prevPageBtn').disabled = this.currentPage <= 1;
+    document.getElementById('nextPageBtn').disabled = this.currentPage >= totalPages;
+  },
+
+  slug(s) { return s.toLowerCase().replace(/\s+/g, '-'); },
+
+  findCustomer(id) { return this.customers.find(c => c.id === id); },
+
+  /* ---------------- Customer Modal ---------------- */
+  bindModal() {
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+      if (e.target.id === 'modalOverlay') this.closeModal();
+    });
+    document.getElementById('modalCloseBtn').addEventListener('click', () => this.closeModal());
+
+    document.getElementById('statusSelect').addEventListener('change', (e) => {
+      const id = document.getElementById('modalOverlay').dataset.id;
+      this.updateStatus(id, e.target.value);
+    });
+    document.getElementById('assignSelect').addEventListener('change', (e) => {
+      const id = document.getElementById('modalOverlay').dataset.id;
+      const c = this.findCustomer(id); if (c) { c.assignedTo = e.target.value; MockData.updateLead(id, { assignedTo: e.target.value }); Utils.toast('Employee assigned', 'success'); }
+    });
+    document.getElementById('notesArea').addEventListener('blur', (e) => {
+      const id = document.getElementById('modalOverlay').dataset.id;
+      const c = this.findCustomer(id); if (c) { c.notes = e.target.value; MockData.updateLead(id, { notes: e.target.value }); Utils.toast('Notes saved', 'success'); }
+    });
+  },
+
+  openCustomerModal(id) {
+    const c = this.findCustomer(id);
+    if (!c) return;
+    const overlay = document.getElementById('modalOverlay');
+    overlay.dataset.id = id;
+    const currency = Api.getSettings().currency || 'EGP';
+
+    document.getElementById('modalName').textContent = c.name;
+    document.getElementById('modalAvatar').textContent = c.name.split(' ').map(w => w[0]).slice(0, 2).join('');
+    document.getElementById('modalPhone').textContent = c.phone;
+    document.getElementById('modalEmail').textContent = c.email;
+    document.getElementById('modalCar').textContent = c.car;
+    document.getElementById('modalBrand').textContent = c.brand || Utils.brandOf(c);
+    document.getElementById('modalBudget').textContent = c.budgetLabel || Utils.formatCurrency(c.budget, currency);
+    document.getElementById('modalDate').textContent = Utils.formatDateTime(c.createdAt);
+    document.getElementById('modalPayment').textContent = c.paymentMethod || '—';
+    document.getElementById('notesArea').value = c.notes || '';
+
+    const statusSelect = document.getElementById('statusSelect');
+    statusSelect.innerHTML = ['New', 'Contacted', 'Follow Up', 'Negotiation', 'Reserved', 'Purchased', 'Lost']
+      .map(s => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${s}</option>`).join('');
+
+    const assignSelect = document.getElementById('assignSelect');
+    assignSelect.innerHTML = this.employees.map(e => `<option value="${e}" ${e === c.assignedTo ? 'selected' : ''}>${e}</option>`).join('');
+
+    document.getElementById('callBtn').onclick = () => this.callCustomer(id);
+    document.getElementById('whatsappBtn').onclick = () => this.whatsappCustomer(id);
+    document.getElementById('copyInfoBtn').onclick = () => this.copyInfo(id);
+
+    overlay.classList.add('open');
+  },
+
+  closeModal() { document.getElementById('modalOverlay').classList.remove('open'); },
+
+  updateStatus(id, status) {
+    const c = this.findCustomer(id);
+    if (c) { c.status = status; MockData.updateLead(id, { status }); this.applyFilters(); this.renderTable(); this.renderCategories(); Utils.toast(`Status updated to "${status}"`, 'success'); }
+  },
+
+  callCustomer(id) { const c = this.findCustomer(id); if (c) window.location.href = `tel:${c.phone.replace(/\s+/g, '')}`; },
+  whatsappCustomer(id) { const c = this.findCustomer(id); if (c) window.open(`https://wa.me/${c.phone.replace(/\s+/g, '').replace(/^0/, '20')}`, '_blank'); },
+  copyPhone(id) { const c = this.findCustomer(id); if (c) { navigator.clipboard.writeText(c.phone); Utils.toast('Phone copied', 'success'); } },
+  copyInfo(id) {
+    const c = this.findCustomer(id); if (!c) return;
+    const text = `${c.name}\n${c.phone}\n${c.email}\n${c.car}\n${Utils.formatCurrency(c.budget)}`;
+    navigator.clipboard.writeText(text); Utils.toast('Customer info copied', 'success');
+  },
+
+  /* ---------------- Insights & Categories ---------------- */
+  renderInsights() {
+    const list = document.getElementById('insightsList');
+    if (!list) return;
+    list.innerHTML = Utils.generateInsights(this.customers).map(i => `<li>${i}</li>`).join('');
+
+    const biz = document.getElementById('businessInsightsList');
+    if (!biz) return;
+    const c = this.customers;
+    const brandCounts = {}; c.forEach(x => brandCounts[Utils.brandOf(x)] = (brandCounts[Utils.brandOf(x)] || 0) + 1);
+    const carCounts = {}; c.forEach(x => carCounts[x.car] = (carCounts[x.car] || 0) + 1);
+    const topBrand = Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0];
+    const topCar = Object.entries(carCounts).sort((a, b) => b[1] - a[1])[0];
+    const catCounts = {}; c.forEach(x => catCounts[Utils.getBudgetCategory(x.budget)] = (catCounts[Utils.getBudgetCategory(x.budget)] || 0) + 1);
+    const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0];
+    const week = c.filter(x => Utils.isThisWeek(x.createdAt)).length;
+    const month = c.filter(x => Utils.isThisMonth(x.createdAt)).length;
+
+    biz.innerHTML = [
+      topCar ? `<li><strong>Most requested vehicle:</strong> ${topCar[0]} (${topCar[1]} requests)</li>` : '',
+      topBrand ? `<li><strong>Top brand:</strong> ${topBrand[0]}</li>` : '',
+      topCat ? `<li><strong>Dominant budget category:</strong> ${topCat[0]} (${Math.round(topCat[1] / (c.length || 1) * 100)}% of leads)</li>` : '',
+      `<li><strong>Weekly leads:</strong> ${week}</li>`,
+      `<li><strong>Monthly leads:</strong> ${month}</li>`,
+    ].join('');
+
+    this.renderTopLists();
+  },
+
+  renderTopLists() {
+    const carCounts = {}; this.customers.forEach(c => carCounts[c.car] = (carCounts[c.car] || 0) + 1);
+    const brandCounts = {}; this.customers.forEach(c => brandCounts[Utils.brandOf(c)] = (brandCounts[Utils.brandOf(c)] || 0) + 1);
+
+    const topCarsEl = document.getElementById('top10Cars');
+    if (topCarsEl) {
+      topCarsEl.innerHTML = Object.entries(carCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
+        .map(([car, n], i) => `<li><span class="rank">${i + 1}</span><span class="rank-name">${car}</span><span class="rank-count">${n}</span></li>`).join('');
+    }
+    const topBrandsEl = document.getElementById('top10Brands');
+    if (topBrandsEl) {
+      topBrandsEl.innerHTML = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
+        .map(([b, n], i) => `<li><span class="rank">${i + 1}</span><span class="rank-name">${b}</span><span class="rank-count">${n}</span></li>`).join('');
+    }
+
+    // avg budget per model / brand
+    const modelBudgets = {}, brandBudgets = {};
+    this.customers.forEach(c => {
+      modelBudgets[c.car] = modelBudgets[c.car] || []; modelBudgets[c.car].push(c.budget);
+      const b = Utils.brandOf(c); brandBudgets[b] = brandBudgets[b] || []; brandBudgets[b].push(c.budget);
+    });
+    const currency = Api.getSettings().currency || 'EGP';
+    const modelAvgEl = document.getElementById('avgBudgetModel');
+    if (modelAvgEl) {
+      modelAvgEl.innerHTML = Object.entries(modelBudgets).map(([m, arr]) => [m, arr.reduce((a, v) => a + v, 0) / arr.length])
+        .sort((a, b) => b[1] - a[1]).slice(0, 10)
+        .map(([m, avg]) => `<li><span class="rank-name">${m}</span><span class="rank-count">${Utils.formatCurrency(avg, currency)}</span></li>`).join('');
+    }
+    const brandAvgEl = document.getElementById('avgBudgetBrand');
+    if (brandAvgEl) {
+      brandAvgEl.innerHTML = Object.entries(brandBudgets).map(([b, arr]) => [b, arr.reduce((a, v) => a + v, 0) / arr.length])
+        .sort((a, b) => b[1] - a[1])
+        .map(([b, avg]) => `<li><span class="rank-name">${b}</span><span class="rank-count">${Utils.formatCurrency(avg, currency)}</span></li>`).join('');
+    }
+  },
+
+  renderCategories() {
+    const wrap = document.getElementById('categoryGrid');
+    if (!wrap) return;
+    const c = this.customers;
+    const budgetCats = { 'Economy': 0, 'Mid Range': 0, 'Premium': 0, 'Luxury': 0 };
+    const typeCats = { 'Sedan': 0, 'SUV': 0, 'Hatchback': 0, 'Pickup': 0, 'Coupe': 0, 'Electric': 0, 'Hybrid': 0 };
+    let returning = 0, fresh = 0;
+    c.forEach(x => {
+      budgetCats[Utils.getBudgetCategory(x.budget)]++;
+      typeCats[Utils.getVehicleType(x.car)]++;
+      if (x.status === 'Purchased' || x.status === 'Reserved') returning++; else fresh++;
+    });
+
+    const rows = [
+      ...Object.entries(budgetCats).map(([k, v]) => ({ label: k, count: v, color: Utils.budgetCategoryColor(k) })),
+      ...Object.entries(typeCats).filter(([, v]) => v > 0).map(([k, v]) => ({ label: k, count: v, color: '#5B8DEF' })),
+      { label: 'Returning Customers', count: returning, color: '#2EC4B6' },
+      { label: 'New Customers', count: fresh, color: '#C9A227' },
+    ];
+    const max = Math.max(...rows.map(r => r.count), 1);
+    wrap.innerHTML = rows.map(r => `
+      <div class="cat-row">
+        <span class="cat-label">${r.label}</span>
+        <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${(r.count / max * 100).toFixed(0)}%; background:${r.color}"></div></div>
+        <span class="cat-count">${r.count}</span>
+      </div>`).join('');
+  },
+
+  /* ---------------- Notifications ---------------- */
+  renderNotifications() {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    const recent = [...this.customers].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
+    const currency = Api.getSettings().currency || 'EGP';
+    list.innerHTML = recent.map(c => `
+      <div class="notif-item">
+        <div class="notif-dot"></div>
+        <div>
+          <p class="notif-title">New Lead: ${c.name}</p>
+          <p class="notif-sub">Interested in ${c.car} · ${Utils.formatCurrency(c.budget, currency)}</p>
+          <p class="notif-time">${Utils.timeAgo(c.createdAt)}</p>
+        </div>
+      </div>`).join('');
+    document.getElementById('notifCount').textContent = recent.length;
+  },
+
+  /* ---------------- Settings ---------------- */
+  bindSettings() {
+    document.getElementById('settingsForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const settings = {
+        webhookUrl: document.getElementById('webhookUrlInput').value.trim(),
+        sheetId: document.getElementById('sheetIdInput').value.trim(),
+        refreshInterval: Number(document.getElementById('refreshIntervalInput').value) || 30,
+        currency: document.getElementById('currencySelect').value,
+        language: document.getElementById('languageSelect').value,
+      };
+      Api.saveSettings(settings);
+      Utils.toast('Settings saved successfully', 'success');
+      this.renderStats();
+    });
+  },
+
+  loadSettingsIntoForm() {
+    const s = Api.getSettings();
+    document.getElementById('webhookUrlInput').value = s.webhookUrl || '';
+    document.getElementById('sheetIdInput').value = s.sheetId || '';
+    document.getElementById('refreshIntervalInput').value = s.refreshInterval || 30;
+    document.getElementById('currencySelect').value = s.currency || 'EGP';
+    document.getElementById('languageSelect').value = s.language || 'en';
+  },
+
+  /* ---------------- Dark Mode ---------------- */
+  bindDarkMode() {
+    const toggle = document.getElementById('themeToggle');
+    const saved = Utils.storageGet('dash_theme', 'dark');
+    document.documentElement.setAttribute('data-theme', saved);
+    toggle.checked = saved === 'dark';
+    toggle.addEventListener('change', () => {
+      const theme = toggle.checked ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      Utils.storageSet('dash_theme', theme);
+    });
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+</script>
+</body>
+</html>
